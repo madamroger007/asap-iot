@@ -1,0 +1,44 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Flask cache
+instance/
+*.pyc
+
+# VS Code settings
+.vscode/
+
+# macOS and Linux system files
+.DS_Store
+Thumbs.db
+
+# Snapshot folder (jika tidak ingin menyimpan di git)
+app/static/snapshots/captured/
+app/train model/static/snapshots/
+
+
+# Log files
+*.log
+
+# Jupyter Notebooks checkpoints (jika pakai notebook)
+.ipynb_checkpoints/
+
+# Environment files
+.env
+*.env
+
+# PyCharm settings
+.idea/
+
+# Test/Temp files
+tmp/
+temp/
+static/snapshots/*

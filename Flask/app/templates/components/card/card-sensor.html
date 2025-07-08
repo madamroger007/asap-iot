@@ -1,0 +1,64 @@
+<div class="w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8 place-items-center py-4" x-data="dashboardData" x-init="initWebSocket()">
+  <template x-for="card in cards" :key="card.label">
+    <div class="bg-white p-4 rounded-2xl shadow text-center space-y-2 w-full max-w-xs">
+      <div class="text-3xl mb-1" x-html="card.icon"></div>
+      <div class="text-sm font-semibold text-gray-500" x-text="card.label"></div>
+      <div class="relative w-20 h-20 mx-auto">
+        <svg class="absolute top-0 left-0 w-full h-full transform rotate-[-90deg]">
+          <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="30" cx="40" cy="40" />
+          <circle :class="card.color" stroke-width="10" stroke="currentColor" fill="transparent" r="30" cx="40" cy="40"
+            stroke-dasharray="188.4"
+            :stroke-dashoffset="188.4 - (Math.min(card.value / card.max * 100, 100) * 188.4 / 100)"
+            stroke-linecap="round" />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center text-xl font-bold">
+          <span x-text="Number.isFinite(card.value) ? card.value.toFixed(1) + card.unit : 'N/A'"></span>
+        </div>
+      </div>
+    </div>
+  </template>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+<script>
+  const socket = io("{{ config['FLASK_URL'] }}", {
+    transports: ['websocket'],
+  }); // Default connects to same host
+  let socketInitialized = false;
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('dashboardData', () => ({
+      cards: [
+        { label: 'API', value: null, max: 1, color: 'text-green-500', icon: '🔥', unit: '' },
+        { label: 'ASAP', value: null, max: 1000, color: 'text-blue-500', icon: '💨', unit: 'ppm' },
+        { label: 'SUHU', value: null, max: 100, color: 'text-red-500', icon: '🌡️', unit: '°C' },
+      ]
+      ,
+      initWebSocket() {
+        if (!socketInitialized) {
+          socket.on('sensor_update', data => {
+            console.log("Received sensor_update", data);
+            let updated = false;
+            for (const key in data) {
+              const index = this.cards.findIndex(c => c.label === key);
+              if (index !== -1) {
+                this.cards[index].value = data[key];
+                updated = true;
+              }
+            }
+            if (updated) {
+              // Paksa Alpine re-render
+              this.cards = [...this.cards];
+            }
+          });
+
+
+          socketInitialized = true;
+        }
+      }
+    }));
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,134 @@
+<div class="flex justify-between items-center mb-4 mt-5">
+
+
+  <label class="text-sm">
+    Baris per halaman:
+    <select id="rowsPerPage" class="border px-2 py-1 rounded">
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="25">25</option>
+    </select>
+  </label>
+</div>
+<div class="bg-white rounded-xl shadow-md p-4 overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200 text-sm" id="monitorTable">
+    <thead class="bg-gray-50 text-gray-700 font-semibold">
+      <tr>
+        <th class="px-6 py-3 text-left">Nomor WA</th>
+        <th class="px-6 py-3 text-left">Dibuat Sejak</th>
+        <th class="px-6 py-3 text-left">Diubah Sejak</th>
+        <th class="px-6 py-3 text-left">Jenis Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody" class="divide-y divide-gray-100 text-gray-700">
+      {% for row in table_rows %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-3">{{ row.nomor_hp }}</td>
+        <td class="px-6 py-3">{{ row.dibuat_sejak }}</td>
+        <td class="px-6 py-3">{{ row.diubah_sejak }}</td>
+        <td class="px-6 py-3">
+          <button type="button" onclick="deleteData({{ row.id }})" class="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded">Hapus</button>
+       
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination button container -->
+<div id="pagination" class="flex gap-1 mt-4 flex-wrap"></div>
+
+{% block script %}
+<script>
+  const tbody = document.getElementById("tableBody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  const sortSelect = document.getElementById("sortSelect");
+  const rowsPerPageSelect = document.getElementById("rowsPerPage");
+  const pagination = document.getElementById("pagination");
+
+  let currentPage = 1;
+  let rowsPerPage = parseInt(rowsPerPageSelect.value);
+
+  function getColumnIndex(key) {
+    switch (key) {
+      case "kelembapan_udara": return 1;
+      case "kelembapan_tanah": return 2;
+      case "suhu": return 3;
+      case "penyiraman": return 4;
+      case "pengkabutan": return 5;
+      case "dibuat_sejak": return 6;
+      default: return 1;
+    }
+  }
+
+  function renderTable() {
+    const sortBy = sortSelect.value;
+    const colIndex = getColumnIndex(sortBy);
+
+    rows.sort((a, b) => {
+      const aText = a.querySelector(`td:nth-child(${colIndex})`).innerText.toLowerCase();
+      const bText = b.querySelector(`td:nth-child(${colIndex})`).innerText.toLowerCase();
+
+      return aText.localeCompare(bText);
+    });
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    tbody.innerHTML = "";
+    rows.slice(start, end).forEach(row => tbody.appendChild(row));
+
+    renderPagination();
+  }
+
+  function renderPagination() {
+    pagination.innerHTML = "";
+    const pageCount = Math.ceil(rows.length / rowsPerPage);
+
+    for (let i = 1; i <= pageCount; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+      btn.className = `px-3 py-1 rounded ${i === currentPage ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+      btn.onclick = () => {
+        currentPage = i;
+        renderTable();
+      };
+      pagination.appendChild(btn);
+    }
+  }
+
+  sortSelect.addEventListener("change", () => {
+    currentPage = 1;
+    renderTable();
+  });
+
+  rowsPerPageSelect.addEventListener("change", () => {
+    rowsPerPage = parseInt(rowsPerPageSelect.value);
+    currentPage = 1;
+    renderTable();
+  });
+
+  renderTable();
+
+  function deleteData(id) {
+    if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+      fetch(`/api/delete-wa-number/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          alert("Data berhasil dihapus.");
+          location.reload();
+        } else {
+          alert("Gagal menghapus data.");
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+<aside class="fixed z-40 top-0 left-0 h-screen transition-all duration-300 overflow-y-auto bg-[#1E1D20]"
+  :class="sidebarMinimized ? 'w-16' : 'w-64'">
+  <div class="flex items-center justify-between px-4 py-4">
+    <h2 class="text-xl font-bold " x-show="!sidebarMinimized">Dashboard</h2>
+    <button @click="sidebarMinimized = !sidebarMinimized">
+      <span class="material-icons">menu</span>
+    </button>
+  </div>
+
+  <nav class="px-2" x-data="{ currentRoute: window.location.pathname }">
+    <ul class="space-y-4 mt-4">
+      <li>
+        <a href="/" class="flex items-center gap-2 rounded px-2 py-2"
+          :class="currentRoute === '/' ? 'bg-gray-200/40 text-black font-semibold' : 'text-gray-700 hover:text-black'">
+          <span class="material-icons">dashboard</span>
+          <span x-show="!sidebarMinimized">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="/whatsapp" class="flex items-center gap-2 rounded px-2 py-2"
+          :class="currentRoute.startsWith('/whatsapp') ? 'bg-gray-200/40 text-black font-semibold' : 'text-gray-700 hover:text-black'">
+          <span class="material-icons">chat</span>
+          <span x-show="!sidebarMinimized">Whatsapp</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="/logout" class="flex items-center gap-2 rounded px-2 py-2 text-red-500 hover:text-red-700">
+          <span class="material-icons">logout</span>
+          <span x-show="!sidebarMinimized">Logout</span>
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+</aside>

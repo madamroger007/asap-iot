@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ sidebarOpen: false, sidebarMinimized: false }">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dashboard Kebakaran</title>
+  <meta name="description"
+    content="Pantau dan kelola sistem kebakaran secara real-time melalui Dashboard yang responsif dan informatif." />
+  <meta name="keywords"
+    content="Dashboard kebakaran" />
+  <meta name="author" content="Nama Tim atau Instansi" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Dashboard kebakaran" />
+  <meta property="og:description"
+    content="Pantau sistem kebakaran secara langsung dengan tampilan dashboard interaktif." />
+  <meta property="og:image" content="{{ url_for('static', filename='img/preview.jpg') }}" />
+  <meta property="og:url" content="{{ request.url }}" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dashboard kebakaran" />
+  <meta name="twitter:description"
+    content="Pantau sistem kebakaran secara real-time dengan fitur canggih dan tampilan modern." />
+  <meta name="twitter:image" content="{{ url_for('static', filename='img/preview.jpg') }}" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon" />
+
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
+
+  <!-- Tailwind Custom Theme -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+
+    aside, nav span {
+      @apply text-white  ;
+    }
+  </style>
+
+  {% block style %}{% endblock %}
+</head>
+
+<body class="bg-gray-100 font-sans flex">
+
+  <!-- Sidebar include -->
+  {% include 'components/sidebar.html' %}
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col transition-all duration-300" :class="{
+    'ml-64': !sidebarMinimized,
+    'ml-16': sidebarMinimized
+  }">
+
+    <main class="p-6 md:p-10 overflow-auto">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js" defer></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

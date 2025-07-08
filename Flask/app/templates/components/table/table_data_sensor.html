@@ -1,0 +1,181 @@
+<!-- Tombol Hapus Terpilih -->
+<div class="mb-4">
+  <button id="deleteSelectedBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50">
+    Hapus Terpilih
+  </button>
+</div>
+
+<div class="bg-white rounded-xl shadow-md p-4 overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200 text-sm" id="monitorTable">
+    <thead class="bg-gray-50 text-gray-700 font-semibold">
+      <tr>
+        <th class="px-4 py-3 text-left">
+          <input type="checkbox" id="selectAll">
+        </th>
+        <th class="px-6 py-3 text-left">SUHU</th>
+        <th class="px-6 py-3 text-left">ASAP</th>
+        <th class="px-6 py-3 text-left">API</th>
+        <th class="px-6 py-3 text-left">KEBAKARAN</th>
+        <th class="px-6 py-3 text-left">WAKTU</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody" class="divide-y divide-gray-100 text-gray-700">
+      {% for row in table_rows %}
+      <tr class="hover:bg-gray-50" data-id="{{ row.id }}">
+        <td class="px-4 py-3">
+          <input type="checkbox" class="rowCheckbox">
+        </td>
+        <td class="px-6 py-3">{{ row.suhu }}</td>
+        <td class="px-6 py-3">{{ row.asap }}</td>
+        <td class="px-6 py-3">
+          {% if row.api %} 
+          Api Terdeteksi
+          
+          {% else %} 
+          -
+          {% endif %}
+        </td>
+        <td class="px-6 py-3">
+          {% if row.kebakaran %}
+        KEBAKARAN TERDETEKSI
+          {% else %}
+          AMAN
+          {% endif %}
+        </td>
+        <td class="px-6 py-3">{{ row.dibuat_sejak }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div id="pagination" class="flex gap-1 mt-4 flex-wrap"></div>
+
+{% block script %}
+<script>
+  const tbody = document.getElementById("tableBody");
+  const pagination = document.getElementById("pagination");
+  const deleteBtn = document.getElementById("deleteSelectedBtn");
+  const selectAll = document.getElementById("selectAll");
+
+  // Data awal: salin baris-baris asli ke memory
+  let rows = Array.from(tbody.querySelectorAll("tr"));
+  let currentPage = 1;
+  let rowsPerPage = 10;
+
+  function renderTable() {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    tbody.innerHTML = "";
+
+    const visibleRows = rows.slice(start, end);
+    visibleRows.forEach(row => tbody.appendChild(row));
+    renderPagination();
+    attachCheckboxListeners();
+    updateSelectAllState();
+    updateDeleteButtonState();
+  }
+
+  function renderPagination() {
+    pagination.innerHTML = "";
+    const pageCount = Math.ceil(rows.length / rowsPerPage);
+    for (let i = 1; i <= pageCount; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+      btn.className = `px-3 py-1 rounded ${i === currentPage ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+      btn.onclick = () => {
+        currentPage = i;
+        renderTable();
+      };
+      pagination.appendChild(btn);
+    }
+  }
+
+  function attachCheckboxListeners() {
+    const checkboxes = document.querySelectorAll(".rowCheckbox");
+    checkboxes.forEach(cb => {
+      cb.addEventListener("change", () => {
+        updateDeleteButtonState();
+        updateSelectAllState();
+      });
+    });
+  }
+
+  selectAll.addEventListener("change", function () {
+    const visibleCheckboxes = Array.from(tbody.querySelectorAll(".rowCheckbox"));
+    visibleCheckboxes.forEach(cb => cb.checked = this.checked);
+    updateDeleteButtonState();
+  });
+
+  function updateSelectAllState() {
+    const checkboxes = tbody.querySelectorAll(".rowCheckbox");
+    const checked = tbody.querySelectorAll(".rowCheckbox:checked");
+    selectAll.checked = checkboxes.length > 0 && checkboxes.length === checked.length;
+  }
+
+  function updateDeleteButtonState() {
+    const checkedCount = document.querySelectorAll(".rowCheckbox:checked").length;
+    deleteBtn.disabled = checkedCount === 0;
+  }
+
+  deleteBtn.addEventListener("click", async () => {
+    const checkedRows = document.querySelectorAll(".rowCheckbox:checked");
+    const ids = Array.from(checkedRows).map(cb => cb.closest("tr").dataset.id);
+
+    if (!ids.length) return;
+
+    const res = await fetch("/sensor/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids })
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      rows = rows.filter(row => !ids.includes(row.dataset.id));
+      renderTable();
+      alert(`${result.deleted} data berhasil dihapus.`);
+    } else {
+      alert("Gagal menghapus data.");
+    }
+  });
+
+  // Jika dropdown sorting dan rowsPerPage ada
+  const sortSelect = document.getElementById("sortSelect");
+  const rowsPerPageSelect = document.getElementById("rowsPerPage");
+
+  if (sortSelect && rowsPerPageSelect) {
+    sortSelect.addEventListener("change", () => {
+      const colIndex = getColumnIndex(sortSelect.value);
+      rows.sort((a, b) => {
+        const aText = a.querySelector(`td:nth-child(${colIndex})`)?.innerText || "";
+        const bText = b.querySelector(`td:nth-child(${colIndex})`)?.innerText || "";
+        return aText.localeCompare(bText);
+      });
+      currentPage = 1;
+      renderTable();
+    });
+
+    rowsPerPageSelect.addEventListener("change", () => {
+      rowsPerPage = parseInt(rowsPerPageSelect.value);
+      currentPage = 1;
+      renderTable();
+    });
+  }
+
+  function getColumnIndex(key) {
+    switch (key) {
+      case "ph": return 2;
+      case "tds": return 3;
+      case "suhu": return 4;
+      case "turbidity": return 5;
+      case "kelayakan": return 6;
+      case "waktu": return 7;
+      default: return 2;
+    }
+  }
+
+  // Inisialisasi tabel
+  renderTable();
+</script>
+{% endblock %}
