@@ -13,7 +13,7 @@
           <input type="checkbox" id="selectAll">
         </th>
         <th class="px-6 py-3 text-left">SUHU</th>
-        <th class="px-6 py-3 text-left">ASAP</th>
+        <th class="px-6 py-3 text-left">ASAP/GAS</th>
         <th class="px-6 py-3 text-left">API</th>
         <th class="px-6 py-3 text-left">KEBAKARAN</th>
         <th class="px-6 py-3 text-left">WAKTU</th>
@@ -28,16 +28,16 @@
         <td class="px-6 py-3">{{ row.suhu }}</td>
         <td class="px-6 py-3">{{ row.asap }}</td>
         <td class="px-6 py-3">
-          {% if row.api %} 
+          {% if row.api %}
           Api Terdeteksi
-          
-          {% else %} 
+
+          {% else %}
           -
           {% endif %}
         </td>
         <td class="px-6 py-3">
           {% if row.kebakaran %}
-        KEBAKARAN TERDETEKSI
+          KEBAKARAN TERDETEKSI
           {% else %}
           AMAN
           {% endif %}
