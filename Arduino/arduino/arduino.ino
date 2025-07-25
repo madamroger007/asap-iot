@@ -4,8 +4,8 @@
 #include <DHT.h>
 
 // ==================== Konfigurasi WiFi ====================
-const char* ssid = "Konsol";
-const char* password = "20011116";
+const char* ssid = "Avocado";
+const char* password = "12345678";
 
 // ==================== Konfigurasi MQTT (HiveMQ Cloud) ====================
 const char* mqtt_server = "6266344797024ee38899455336cb7979.s1.eu.hivemq.cloud";

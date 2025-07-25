@@ -31,7 +31,7 @@ TOPICS = [
 # Data terbaru
 latest_sensor_data = {
     "SUHU": None,
-    "ASAP": None,
+    "ASAP/GAS": None,
     "API": None,
     "STATUS_KEBAKARAN": None
 }
@@ -74,7 +74,7 @@ def handle_sensor_data_factory(app_context_data):
         # Mapping topik MQTT ke label internal
         mapping = {
             "kebakaran/suhu": "SUHU",
-            "kebakaran/asap": "ASAP",
+            "kebakaran/asap": "ASAP/GAS",
             "kebakaran/api": "API",
             "kebakaran/status": "STATUS_KEBAKARAN"
         }
@@ -154,7 +154,7 @@ def check_sensor_status():
         # Reset data jika tidak berubah selama 24 jam
         if last_change and (now - last_change).total_seconds() > SENSOR_RESET_HOURS * 3600:
             if val is not None:
-                latest_sensor_data[label] = None
+                latest_sensor_data[label] = 0
                 updated = True
                 print(f"⚠️ Data {label} tidak berubah 24 jam, direset.")
 
